@@ -1,0 +1,58 @@
+{
+    "rabbit_version": "3.7.14",
+    "users": [
+        {
+            "name": "guest",
+            "password_hash": "4/e0UfNiGmc5ncIl4yrNz5EH7F5J+FCYV3FXmUngIxOyM7aA",
+            "hashing_algorithm": "rabbit_password_hashing_sha256",
+            "tags": "administrator"
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "/"
+        }
+    ],
+    "permissions": [
+        {
+            "user": "guest",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "topic_permissions": [],
+    "parameters": [],
+    "global_parameters": [
+        {
+            "name": "cluster_name",
+            "value": "rabbit@node-1"
+        }
+    ],
+    "policies": [
+        {
+            "vhost": "/",
+            "name": "ha-three",
+            "pattern": "^three\\.",
+            "apply-to": "all",
+            "definition": {
+                "ha-mode": "exactly",
+                "ha-params": 3,
+                "ha-sync-mode": "automatic"
+            },
+            "priority": 0
+        }
+    ],
+    "queues": [
+        {
+            "name": "three.queue",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        }
+    ],
+    "exchanges": [],
+    "bindings": []
+}

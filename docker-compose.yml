@@ -1,0 +1,69 @@
+name: rabbitmq
+
+services:  
+  node-1:
+    build: 
+      context: rabbitmq
+      target: master
+    hostname: node-1
+    volumes:
+      - node-1:/var/lib/rabbitmq
+      - ./rabbitmq/config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbitmq/config/cluster.json:/etc/rabbitmq/cluster.json
+    environment:
+      - RABBITMQ_NODENAME=rabbit
+    ports:      
+      - 5672:5672      
+      - 15672:15672    
+    healthcheck:
+      test: netstat -ltn | grep -c ":5672"
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+
+  node-2:
+    build: 
+      context: rabbitmq
+      target: slave
+    hostname: node-2    
+    volumes:
+      - node-2:/var/lib/rabbitmq
+      - ./rabbitmq/config/bootstrap.sh:/app/bootstrap.sh      
+    environment:
+      - RABBITMQ_NODENAME=rabbit
+    depends_on:
+      node-1:
+          condition: service_healthy
+    entrypoint: ["/bin/sh", "-c", "/app/bootstrap.sh"]
+
+  node-3:
+    build: 
+      context: rabbitmq
+      target: slave
+    hostname: node-3
+    working_dir: /app    
+    volumes:
+      - node-3:/var/lib/rabbitmq
+      - ./rabbitmq/config/bootstrap.sh:/app/bootstrap.sh      
+    environment:
+      - RABBITMQ_NODENAME=rabbit
+    depends_on:
+      node-1:
+          condition: service_healthy
+    entrypoint: ["/bin/sh", "-c", "/app/bootstrap.sh"]
+
+  app:
+    build: 
+      context: consumer
+    hostname: app
+    environment:
+      - RABBITMQ_URL=amqp://node-1:5672
+    depends_on:
+      node-1:
+          condition: service_healthy
+
+volumes:
+  node-1:
+  node-2:
+  node-3:
